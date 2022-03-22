@@ -19,16 +19,24 @@ window.addEventListener("load",function() {
   function ask(word) {
     return new Promise(deliver => {
       const popup = document.createElement('form');
-      popup.insertAdjacentHTML('afterbegin',
-      `<fieldset>
-        <label>Spell the word</label>
-        <input type="text" name="input" autocapitalize="none" />
-      </fieldset>`);
+
+      const fields = document.createElement('fieldset');
+      const lab = document.createElement('label');
+      lab.textContent = 'Spell the word';
+      fields.appendChild(lab);
+
+      const input = document.createElement('input');
+      input.autocapitalize = "none";
+      input.name = "input";
+      fields.appendChild(input)
+
+      popup.appendChild(fields);
 
       popup.addEventListener("submit", function(e) {
         e.preventDefault();
         popup.parentElement.removeChild(popup);
-        deliver(e.target.input.value);
+        delete popup;
+        deliver(e.target.input.value.trim());
       });
 
       const skipButton = document.createElement('button');
@@ -36,6 +44,7 @@ window.addEventListener("load",function() {
       skipButton.textContent = 'Skip';
       skipButton.addEventListener('click', function() {
         popup.parentElement.removeChild(popup);
+        delete popup;
         setTimeout(do_wordloop, 100);
       });
       popup.appendChild(skipButton);
@@ -50,7 +59,9 @@ window.addEventListener("load",function() {
       popup.appendChild(repeatButton);
 
       document.body.appendChild(popup);
-      setTimeout(popup.getElementsByTagName("input")[0].focus, 10);
+      dofocus = function(){input.focus();};
+      doblur = function(){input.blur(); setTimeout(dofocus, 100);};
+      setTimeout(doblur, 100);
     });
   }
 
