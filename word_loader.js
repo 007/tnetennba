@@ -41,7 +41,7 @@ window.addEventListener("load", function() {
         input.autocorrect = "off";
         input.name = "input";
         input.id = "input";
-        fields.appendChild(input)
+        fields.appendChild(input);
 
         ui.appendChild(fields);
 
@@ -71,13 +71,13 @@ window.addEventListener("load", function() {
         return new Promise(done => {
             const audio = document.getElementById("playback");
             audio.src = "data:audio/wav;base64," + b64;
-            audio.play()
-            audio.onended = done
-        })
+            audio.play();
+            audio.onended = done;
+        });
     }
 
     function reset_ui() {
-        const input = document.getElementById("input")
+        const input = document.getElementById("input");
         input.value = ""
         input.focus();
         document.getElementById("result").style.display = "none";
@@ -98,15 +98,18 @@ window.addEventListener("load", function() {
     }
 
     async function speak_current_word() {
-        const word = JSON.parse(localStorage.getItem("current_word"));
+        const input = document.getElementById("input");
+        input.focus();
+
+        const word = JSON.parse(sessionStorage.getItem("current_word"));
         await play_audio(word.audio.female);
         await play_audio(word.audio.male);
     }
 
     async function do_wordloop() {
-        var wordlist = JSON.parse(localStorage.getItem("word_audio"));
+        var wordlist = window._word_audio;
         var current_word = wordlist[Math.floor(Math.random() * wordlist.length)];
-        localStorage.setItem("current_word", JSON.stringify(current_word));
+        sessionStorage.setItem("current_word", JSON.stringify(current_word));
 
         reset_ui();
 
@@ -130,8 +133,7 @@ window.addEventListener("load", function() {
         button.parentElement.removeChild(button);
         getJSON("word_audio.json").then(
             data => {
-                debugger;
-                localStorage.setItem("word_audio", JSON.stringify(data));
+                window._word_audio = data;
                 initialize_ui();
                 do_wordloop();
             }
