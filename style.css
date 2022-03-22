@@ -1,0 +1,67 @@
+body {
+  display: flex;
+  align-items: center;
+  x-font-family: Verdana, sans-serif;
+  justify-content: space-evenly;
+}
+
+.buttonbox {
+  display: flex;
+  justify-content: space-evenly;
+  flex-wrap: nowrap;
+}
+
+button {
+  display: inline-block;
+  background-color: #666;
+  color: #fff;
+  padding: 16px 32px;
+  margin: 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 24px;
+  border-radius: 8px;
+}
+
+label {
+  font-size: 24px;
+  color: #666;
+  padding: 32px;
+  text-align: center;
+  margin: 16px;
+}
+
+input {
+  font-size: 24px;
+  color: #666;
+  padding: 16px;
+  text-align: center;
+  margin: 16px;
+  border-radius: 8px;
+}
+
+#result {
+  font-size: 24px;
+  color: #666;
+  padding: 16px;
+  text-align: center;
+  margin: 16px;
+  border-radius: 8px;
+}
+
+#result.hidden {
+  visibility: hidden;
+}
+
+#result.missed {
+  display: block;
+  background-color: #444;
+  color: #fff;
+}
+
+#result.success {
+  display: block;
+  color: #fff;
+  background-color: #4a4;
+}

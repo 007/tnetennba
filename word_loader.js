@@ -11,15 +11,13 @@ window.addEventListener("load", function() {
     function success(text) {
         const result = document.getElementById('result');
         result.innerText = text
-        result.style.backgroundColor = "#afd";
-        result.style.display = "block";
+        result.classList.replace("hidden", "success");
     }
 
     function missed(text) {
         const result = document.getElementById('result');
         result.innerText = text;
-        result.style.backgroundColor = "#fad";
-        result.style.display = "block";
+        result.classList.replace("hidden", "missed");
     }
 
     function initialize_ui() {
@@ -44,6 +42,8 @@ window.addEventListener("load", function() {
         fields.appendChild(input);
 
         ui.appendChild(fields);
+        const buttonBox = document.createElement('div');
+        buttonBox.classList.add("buttonbox");
 
         const skipButton = document.createElement('button');
         skipButton.type = 'button';
@@ -51,17 +51,21 @@ window.addEventListener("load", function() {
         skipButton.addEventListener('click', function() {
             setTimeout(do_wordloop, 100);
         });
-        ui.appendChild(skipButton);
+        buttonBox.appendChild(skipButton);
 
         const repeatButton = document.createElement('button');
         repeatButton.id = 'repeat';
         repeatButton.type = 'button';
         repeatButton.textContent = 'Repeat';
         repeatButton.addEventListener('click', speak_current_word);
-        ui.appendChild(repeatButton);
+        buttonBox.appendChild(repeatButton);
+
+        ui.appendChild(buttonBox);
 
         const result = document.createElement('div');
         result.id = 'result';
+        result.classList.add("hidden");
+        result.textContent = 'empty';
         ui.appendChild(result);
 
         document.body.appendChild(ui);
@@ -80,7 +84,9 @@ window.addEventListener("load", function() {
         const input = document.getElementById("input");
         input.value = ""
         input.focus();
-        document.getElementById("result").style.display = "none";
+        const result = document.getElementById("result");
+        result.classList.replace("success", "hidden");
+        result.classList.replace("missed", "hidden");
         const audio = document.getElementById("playback");
         audio.pause();
         audio.currentTime = 0;
