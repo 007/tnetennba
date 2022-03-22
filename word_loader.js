@@ -22,7 +22,7 @@ window.addEventListener("load",function() {
       popup.insertAdjacentHTML('afterbegin',
       `<fieldset>
         <label>Spell the word</label>
-        <input type="text" name="input" />
+        <input type="text" name="input" autocapitalize="none" />
       </fieldset>`);
 
       popup.addEventListener("submit", function(e) {
@@ -50,7 +50,7 @@ window.addEventListener("load",function() {
       popup.appendChild(repeatButton);
 
       document.body.appendChild(popup);
-      popup.getElementsByTagName("input")[0].focus();
+      setTimeout(popup.getElementsByTagName("input")[0].focus, 10);
     });
   }
 
