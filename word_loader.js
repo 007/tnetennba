@@ -8,6 +8,14 @@ window.addEventListener("load",function() {
     return data; // returns a promise, which resolves to this data value
   }
 
+  function success(text) {
+    alert(text)
+  }
+
+  function missed(text) {
+    alert(text)
+  }
+
   function ask(word) {
     return new Promise(deliver => {
       const popup = document.createElement('form');
@@ -67,9 +75,9 @@ window.addEventListener("load",function() {
 
     var matching_word = await ask(current_word);
     if (matching_word == current_word.word || matching_word == current_word.alt) {
-      alert("You got it!");
+      success("You got it!");
     } else {
-      alert(`Not quite! It was ${current_word.word}`);
+      missed(`Not quite! It was ${current_word.word}`);
     }
     setTimeout(do_wordloop, 100);
   }
