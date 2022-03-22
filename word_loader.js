@@ -28,10 +28,14 @@ window.addEventListener("load", function() {
         audio.id = "playback"
         ui.appendChild(audio);
 
-        const fields = document.createElement('fieldset');
-        const lab = document.createElement('label');
-        lab.textContent = 'Spell the word';
-        fields.appendChild(lab);
+        const result = document.createElement('div');
+        result.id = 'result';
+        result.classList.add("hidden");
+        result.textContent = 'empty';
+        ui.appendChild(result);
+
+        const inbox = document.createElement("div");
+        inbox.classList.add("inbox");
 
         const input = document.createElement('input');
         input.autocapitalize = "none";
@@ -39,9 +43,11 @@ window.addEventListener("load", function() {
         input.autocorrect = "off";
         input.name = "input";
         input.id = "input";
-        fields.appendChild(input);
+        input.placeholder = "Spell The Word";
+        inbox.appendChild(input);
 
-        ui.appendChild(fields);
+
+        ui.appendChild(inbox);
         const buttonBox = document.createElement('div');
         buttonBox.classList.add("buttonbox");
 
@@ -61,12 +67,6 @@ window.addEventListener("load", function() {
         buttonBox.appendChild(repeatButton);
 
         ui.appendChild(buttonBox);
-
-        const result = document.createElement('div');
-        result.id = 'result';
-        result.classList.add("hidden");
-        result.textContent = 'empty';
-        ui.appendChild(result);
 
         document.body.appendChild(ui);
     }
