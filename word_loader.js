@@ -1,110 +1,138 @@
 window.addEventListener("load", function() {
     const getJSON = async url => {
         const response = await fetch(url);
-        if (!response.ok) // check if response worked (no 404 errors etc...)
+        if (!response.ok) {
             throw new Error(response.statusText);
-
+        }
         const data = response.json(); // get JSON from the response
         return data; // returns a promise, which resolves to this data value
     }
 
     function success(text) {
-        alert(text)
+        const result = document.getElementById('result');
+        result.innerText = text
+        result.style.backgroundColor = "#afd";
+        result.style.display = "block";
     }
 
     function missed(text) {
-        alert(text)
+        const result = document.getElementById('result');
+        result.innerText = text;
+        result.style.backgroundColor = "#fad";
+        result.style.display = "block";
     }
 
-    function ask(word) {
-        return new Promise(deliver => {
-            const popup = document.createElement('form');
+    function initialize_ui() {
+        const ui = document.createElement('form');
+        ui.id = "ui";
 
-            const fields = document.createElement('fieldset');
-            const lab = document.createElement('label');
-            lab.textContent = 'Spell the word';
-            fields.appendChild(lab);
+        const audio = document.createElement('audio');
+        audio.id = "playback"
+        ui.appendChild(audio);
 
-            const input = document.createElement('input');
-            input.autocapitalize = "none";
-            input.name = "input";
-            fields.appendChild(input)
+        const fields = document.createElement('fieldset');
+        const lab = document.createElement('label');
+        lab.textContent = 'Spell the word';
+        fields.appendChild(lab);
 
-            popup.appendChild(fields);
+        const input = document.createElement('input');
+        input.autocapitalize = "none";
+        input.autocomplete = "off";
+        input.autocorrect = "off";
+        input.name = "input";
+        input.id = "input";
+        fields.appendChild(input)
 
-            popup.addEventListener("submit", function(e) {
-                e.preventDefault();
-                popup.parentElement.removeChild(popup);
-                delete popup;
-                deliver(e.target.input.value.trim());
-            });
+        ui.appendChild(fields);
 
-            const skipButton = document.createElement('button');
-            skipButton.type = 'button';
-            skipButton.textContent = 'Skip';
-            skipButton.addEventListener('click', function() {
-                popup.parentElement.removeChild(popup);
-                delete popup;
-                setTimeout(do_wordloop, 100);
-            });
-            popup.appendChild(skipButton);
-
-            const repeatButton = document.createElement('button');
-            repeatButton.type = 'button';
-            repeatButton.textContent = 'Repeat';
-            repeatButton.addEventListener('click', async function() {
-                await play_audio(word.audio.female);
-                await play_audio(word.audio.male);
-            });
-            popup.appendChild(repeatButton);
-
-            document.body.appendChild(popup);
-            dofocus = function() {
-                input.focus();
-            };
-            doblur = function() {
-                input.blur();
-                setTimeout(dofocus, 100);
-            };
-            setTimeout(doblur, 100);
+        const skipButton = document.createElement('button');
+        skipButton.type = 'button';
+        skipButton.textContent = 'Skip';
+        skipButton.addEventListener('click', function() {
+            setTimeout(do_wordloop, 100);
         });
-    }
+        ui.appendChild(skipButton);
 
-    function pick_elem(list) {
-        return list[Math.floor(Math.random() * list.length)]
+        const repeatButton = document.createElement('button');
+        repeatButton.id = 'repeat';
+        repeatButton.type = 'button';
+        repeatButton.textContent = 'Repeat';
+        repeatButton.addEventListener('click', speak_current_word);
+        ui.appendChild(repeatButton);
+
+        const result = document.createElement('div');
+        result.id = 'result';
+        ui.appendChild(result);
+
+        document.body.appendChild(ui);
     }
 
     function play_audio(b64) {
         return new Promise(done => {
-            var audio = new Audio("data:audio/wav;base64," + b64)
+            const audio = document.getElementById("playback");
+            audio.src = "data:audio/wav;base64," + b64;
             audio.play()
             audio.onended = done
         })
     }
 
+    function reset_ui() {
+        const input = document.getElementById("input")
+        input.value = ""
+        input.focus();
+        document.getElementById("result").style.display = "none";
+        const audio = document.getElementById("playback");
+        audio.pause();
+        audio.currentTime = 0;
+        audio.src = "";
+    }
+
+    function ui_input() {
+        return new Promise(done => {
+            document.getElementById("ui").addEventListener("submit", function(e) {
+                e.preventDefault();
+                this.removeEventListener('submit', arguments.callee);
+                done(e.target.input.value.trim());
+            });
+        });
+    }
+
+    async function speak_current_word() {
+        const word = JSON.parse(localStorage.getItem("current_word"));
+        await play_audio(word.audio.female);
+        await play_audio(word.audio.male);
+    }
+
     async function do_wordloop() {
-        var wordlist = window._word_data;
+        var wordlist = JSON.parse(localStorage.getItem("word_audio"));
+        var current_word = wordlist[Math.floor(Math.random() * wordlist.length)];
+        localStorage.setItem("current_word", JSON.stringify(current_word));
 
-        var current_word = pick_elem(wordlist);
-        await play_audio(current_word.audio.female);
-        await play_audio(current_word.audio.male);
+        reset_ui();
 
-        var matching_word = await ask(current_word);
+        speak_current_word();
+
+        var matching_word = await ui_input();
         if (matching_word == current_word.word || matching_word == current_word.alt) {
             success("You got it!");
         } else {
             missed(`Not quite! It was ${current_word.word}`);
         }
-        setTimeout(do_wordloop, 100);
+
+        // re-enter loop async
+        setTimeout(do_wordloop, 1000);
     }
 
+    // initialize page onload, create button to force interaction and kick off loading + audio
     var button = document.createElement('button');
     button.innerHTML = "Let's Go!";
     button.onclick = function() {
         button.parentElement.removeChild(button);
         getJSON("word_audio.json").then(
             data => {
-                window._word_data = data;
+                debugger;
+                localStorage.setItem("word_audio", JSON.stringify(data));
+                initialize_ui();
                 do_wordloop();
             }
         ).catch(
