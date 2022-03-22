@@ -93,10 +93,18 @@ window.addEventListener("load", function() {
         audio.src = "";
     }
 
+    function suppress_submit(e) {
+        e.preventDefault();
+        return false;
+    }
+
     function ui_input() {
         return new Promise(done => {
-            document.getElementById("ui").addEventListener("submit", function(e) {
+            const ui = document.getElementById("ui");
+            ui.removeEventListener("submit", suppress_submit);
+            ui.addEventListener("submit", function(e) {
                 e.preventDefault();
+                this.addEventListener("submit", suppress_submit);
                 this.removeEventListener('submit', arguments.callee);
                 done(e.target.input.value.trim());
             });
