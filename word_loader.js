@@ -8,16 +8,41 @@ window.addEventListener("load", function() {
         return data; // returns a promise, which resolves to this data value
     }
 
+    function storage_int(key) {
+        return parseInt(sessionStorage.getItem(key));
+    }
+
     function success(text) {
         const result = document.getElementById('result');
         result.innerText = text
         result.classList.replace("hidden", "success");
+
+        var score = storage_int("score");
+        score = score + 1;
+        sessionStorage.setItem("score", score);
+
+        var streak = storage_int("streak");
+        streak = streak + 1;
+        sessionStorage.setItem("streak", streak);
+
+        update_scoreboard();
     }
 
     function missed(text) {
         const result = document.getElementById('result');
         result.innerText = text;
         result.classList.replace("hidden", "missed");
+
+        var score = storage_int("score");
+        score = Math.max(score - 1, 0);
+        sessionStorage.setItem("score", score);
+        sessionStorage.setItem("streak", 0);
+        update_scoreboard();
+    }
+
+    function update_scoreboard() {
+        document.getElementById("streak").innerText = `Streak: ${sessionStorage.getItem("streak")}`;
+        document.getElementById("score").innerText = `Score: ${sessionStorage.getItem("score")}`;
     }
 
     function initialize_ui() {
@@ -28,11 +53,28 @@ window.addEventListener("load", function() {
         audio.id = "playback"
         ui.appendChild(audio);
 
+        const scoreboard = document.createElement('div');
+        scoreboard.classList.add('scoreboard');
+
+        const score = document.createElement('div');
+        score.id = 'score';
+        sessionStorage.setItem("score", 0);
+        score.textContent = "Score: 0";
+        scoreboard.appendChild(score);
+
         const result = document.createElement('div');
         result.id = 'result';
         result.classList.add("hidden");
         result.textContent = 'empty';
-        ui.appendChild(result);
+        scoreboard.appendChild(result);
+
+        const streak = document.createElement('div');
+        streak.id = 'streak';
+        sessionStorage.setItem("streak", 0);
+        streak.textContent = "Streak: 0";
+        scoreboard.appendChild(streak);
+
+        ui.appendChild(scoreboard);
 
         const inbox = document.createElement("div");
         inbox.classList.add("inbox");

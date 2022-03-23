@@ -8,14 +8,29 @@ body {
   margin-top: -1px;
   position: relative;
   align-items: center;
-  x-font-family: Verdana, sans-serif;
+  font-family: Verdana, sans-serif;
   justify-content: space-evenly;
 }
 
-.inbox, .buttonbox {
+.inbox, .buttonbox, .scoreboard {
   display: flex;
-  justify-content: space-evenly;
+  justify-content: space-between;
   flex-wrap: nowrap;
+}
+
+.inbox {
+  justify-content: center;
+}
+
+#score, #streak {
+  width: 128px;
+  background-color: #4a4;
+  font-size: 24px;
+  padding: 16px;
+  text-align: center;
+  margin: 16px;
+  border-radius: 8px;
+  color: #fff;
 }
 
 button {
@@ -55,6 +70,7 @@ input {
   text-align: center;
   margin: 16px;
   border-radius: 8px;
+  min-width: 256px;
 }
 
 #result.hidden {
