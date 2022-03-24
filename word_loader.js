@@ -13,10 +13,6 @@ window.addEventListener("load", function() {
     }
 
     function success(text) {
-        const result = document.getElementById('result');
-        result.innerText = text
-        result.classList.replace("hidden", "success");
-
         var score = storage_int("score");
         score = score + 1;
         sessionStorage.setItem("score", score);
@@ -25,19 +21,21 @@ window.addEventListener("load", function() {
         streak = streak + 1;
         sessionStorage.setItem("streak", streak);
 
-        update_scoreboard();
+        const result = document.getElementById('result');
+        result.innerText = text
+        result.classList.replace("hidden", "success");
+
     }
 
     function missed(text) {
-        const result = document.getElementById('result');
-        result.innerText = text;
-        result.classList.replace("hidden", "missed");
-
         var score = storage_int("score");
         score = Math.max(score - 1, 0);
         sessionStorage.setItem("score", score);
         sessionStorage.setItem("streak", 0);
-        update_scoreboard();
+
+        const result = document.getElementById('result');
+        result.innerText = text;
+        result.classList.replace("hidden", "missed");
     }
 
     function update_scoreboard() {
@@ -97,7 +95,8 @@ window.addEventListener("load", function() {
         skipButton.type = 'button';
         skipButton.textContent = 'Skip';
         skipButton.addEventListener('click', function() {
-            setTimeout(do_wordloop, 100);
+            sessionStorage.setItem("streak", 0);
+            setTimeout(next_word, 100);
         });
         buttonBox.appendChild(skipButton);
 
@@ -107,8 +106,12 @@ window.addEventListener("load", function() {
         repeatButton.textContent = 'Repeat';
         repeatButton.addEventListener('click', speak_current_word);
         buttonBox.appendChild(repeatButton);
-
         ui.appendChild(buttonBox);
+
+        ui.addEventListener("submit", function(e) {
+            e.preventDefault();
+            check_and_score(e.target.input.value.trim());
+        });
 
         document.body.appendChild(ui);
     }
@@ -127,30 +130,18 @@ window.addEventListener("load", function() {
         input.value = ""
         input.focus();
         const result = document.getElementById("result");
-        result.classList.replace("success", "hidden");
-        result.classList.replace("missed", "hidden");
+        result.classList.add("hidden");
+        result.classList.remove("success", "missed");
         const audio = document.getElementById("playback");
         audio.pause();
         audio.currentTime = 0;
         audio.src = "";
+        update_scoreboard();
     }
 
     function suppress_submit(e) {
         e.preventDefault();
         return false;
-    }
-
-    function ui_input() {
-        return new Promise(done => {
-            const ui = document.getElementById("ui");
-            ui.removeEventListener("submit", suppress_submit);
-            ui.addEventListener("submit", function(e) {
-                e.preventDefault();
-                this.addEventListener("submit", suppress_submit);
-                this.removeEventListener('submit', arguments.callee);
-                done(e.target.input.value.trim());
-            });
-        });
     }
 
     async function speak_current_word() {
@@ -162,24 +153,25 @@ window.addEventListener("load", function() {
         await play_audio(word.audio.male);
     }
 
-    async function do_wordloop() {
+    function next_word() {
         var wordlist = window._word_audio;
         var current_word = wordlist[Math.floor(Math.random() * wordlist.length)];
         sessionStorage.setItem("current_word", JSON.stringify(current_word));
-
         reset_ui();
-
         speak_current_word();
+    }
 
-        var matching_word = await ui_input();
+    function check_and_score(matching_word) {
+        const current_word = JSON.parse(sessionStorage.getItem("current_word"));
         if (matching_word == current_word.word || matching_word == current_word.alt) {
             success("You got it!");
         } else {
             missed(`Not quite! It was ${current_word.word}`);
         }
 
+        update_scoreboard();
         // re-enter loop async
-        setTimeout(do_wordloop, 1000);
+        setTimeout(next_word, 1000);
     }
 
     // initialize page onload, create button to force interaction and kick off loading + audio
@@ -191,7 +183,7 @@ window.addEventListener("load", function() {
             data => {
                 window._word_audio = data;
                 initialize_ui();
-                do_wordloop();
+                next_word();
             }
         ).catch(
             error => {
