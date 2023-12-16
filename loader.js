@@ -179,7 +179,7 @@ window.addEventListener("load", function() {
     button.innerHTML = "Let's Go!";
     button.onclick = function() {
         button.parentElement.removeChild(button);
-        getJSON("word_audio.json").then(
+        getJSON("audio.json").then(
             data => {
                 window._word_audio = data;
                 initialize_ui();
