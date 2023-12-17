@@ -1,15 +1,15 @@
-from google.cloud import texttospeech as gcp_tts
-
 import base64
 import json
 import sys
 
-def text_to_speech(word):
+from google.cloud import texttospeech as gcp_tts
 
+
+def text_to_speech(word):
     testing = False
     if testing and word != "wide":
         audio = base64.b64encode("hello".encode("utf-8")).decode("utf-8")
-        return {"male":audio, "female":audio}
+        return {"male": audio, "female": audio}
     else:
         # Instantiates a client
         client = gcp_tts.TextToSpeechClient()
@@ -39,7 +39,7 @@ def text_to_speech(word):
         male_audio = base64.b64encode(male_response.audio_content).decode("utf-8")
         female_audio = base64.b64encode(female_response.audio_content).decode("utf-8")
 
-        return {"male":male_audio, "female":female_audio}
+        return {"male": male_audio, "female": female_audio}
 
 
 word_files = [
@@ -58,15 +58,8 @@ for word_file in word_files:
             print(f"Processing {parts[0]}...        ", file=sys.stderr, end="\r", flush=True)
             speech_data = text_to_speech(parts[0])
             if len(parts) == 1:
-                wordlist.append({
-                    "word": parts[0],
-                    "audio": speech_data,
-                    })
+                wordlist.append({"word": parts[0], "audio": speech_data})
             else:
-                wordlist.append({
-                    "word": parts[0],
-                    "alt": parts[1],
-                    "audio": speech_data,
-                    })
+                wordlist.append({"word": parts[0], "alt": parts[1], "audio": speech_data})
 print("\nDone", file=sys.stderr, flush=True)
 print(json.dumps(wordlist))
