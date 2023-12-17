@@ -1,8 +1,13 @@
 import base64
 import json
+import os
 import sys
 
 from google.cloud import texttospeech as gcp_tts
+
+
+def log(x):
+    print(x, file=sys.stderr, flush=True)
 
 
 def text_to_speech(word):
@@ -42,24 +47,53 @@ def text_to_speech(word):
         return {"male": male_audio, "female": female_audio}
 
 
+def word_to_path(word):
+    word_fn = word.replace(" ", "-").lower()
+    word_prefix = word[0].lower()
+    return f"words/audio/{word_prefix}/{word_fn}.json"
+
+
+def get_cached_audio(word):
+    audio_path = word_to_path(word)
+    try:
+        with open(audio_path, "r") as f:
+            audio = json.load(f)
+            log(f"Got cache for {word}")
+            return audio
+    except:
+        log(f"Failed to find cache for {word} at {audio_path}")
+        pass
+
+
+def cache_audio(word, data):
+    audio_path = word_to_path(word)
+    with open(audio_path, "w") as f:
+        json.dump(data, f, indent=4)
+
+
 word_files = [
     "wordlist.1b.txt",
     "wordlist.2b.txt",
     "wordlist.3b.txt",
 ]
 
+current_year_path = "words/year/2024"
+
 wordlist = []
 
 for word_file in word_files:
-    with open(word_file) as f:
+    with open(os.path.join(current_year_path, word_file)) as f:
         for line in f:
             working_line = line.strip()
-            parts = working_line.split("/")
-            print(f"Processing {parts[0]}...        ", file=sys.stderr, end="\r", flush=True)
-            speech_data = text_to_speech(parts[0])
+            parts = working_line.split("/", 1)
+            log(f"Processing {parts[0]}...        ")
+            speech_data = get_cached_audio(parts[0])
+            if speech_data is None:
+                speech_data = text_to_speech(parts[0])
+                cache_audio(parts[0], speech_data)
             if len(parts) == 1:
                 wordlist.append({"word": parts[0], "audio": speech_data})
             else:
-                wordlist.append({"word": parts[0], "alt": parts[1], "audio": speech_data})
-print("\nDone", file=sys.stderr, flush=True)
+                wordlist.append({"word": parts[0], "alt": parts[1].split("/"), "audio": speech_data})
+log("Done")
 print(json.dumps(wordlist))
