@@ -85,15 +85,19 @@ for word_file in word_files:
     with open(os.path.join(current_year_path, word_file)) as f:
         for line in f:
             working_line = line.strip()
-            parts = working_line.split("/", 1)
-            log(f"Processing {parts[0]}...        ")
-            speech_data = get_cached_audio(parts[0])
-            if speech_data is None:
-                speech_data = text_to_speech(parts[0])
-                cache_audio(parts[0], speech_data)
-            if len(parts) == 1:
-                wordlist.append({"word": parts[0], "audio": speech_data})
-            else:
-                wordlist.append({"word": parts[0], "alt": parts[1].split("/"), "audio": speech_data})
+            wordlist.append(working_line)
+
+audio = []
+for word in sorted(wordlist):
+    parts = word.split("/", 1)
+    log(f"Processing {parts[0]}...        ")
+    speech_data = get_cached_audio(parts[0])
+    if speech_data is None:
+        speech_data = text_to_speech(parts[0])
+        cache_audio(parts[0], speech_data)
+    if len(parts) == 1:
+        audio.append({"word": parts[0], "audio": speech_data})
+    else:
+        audio.append({"word": parts[0], "alt": parts[1].split("/"), "audio": speech_data})
 log("Done")
-print(json.dumps(wordlist))
+print(json.dumps(audio))
